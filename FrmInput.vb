@@ -32,6 +32,7 @@ Public Class FrmInput
         txtEndDate.Text = MonthCalendar2.SelectionStart.ToString("dd/MMM/yyyy")
         txtPromoPeriod.Text = MonthCalendar1.SelectionStart.ToString("dd/MMM/yyyy") & " - " & MonthCalendar2.SelectionStart.ToString("dd/MMM/yyyy")
         DataGridView1.DataSource = ""
+        DataGridView2.DataSource = ""
         txtFileName.Text = ""
         ProgressBar1.Value = 0
         txtTotalRec.Text = ""
@@ -115,8 +116,11 @@ Public Class FrmInput
 
     Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
         SqlConnect()
+        Dim X = DataGridView2.Rows(0).Cells(0).FormattedValue
+
         Dim sSql As String
         Dim dt = DataGridView1.DataSource
+        Dim dt2 = DataGridView2.DataSource
 
         Try
             sSql = "Create Table #PriceTagUploadData (Date_From Datetime Null,Date_End Datetime Null,Plu Varchar(7) Null,Promo_Desc  Varchar(100) Null,Promo_Price  Varchar(18) Null, 
@@ -126,10 +130,15 @@ Public Class FrmInput
             sSqlCmd.ExecuteNonQuery()
 
             For i = 0 To dt.Rows.Count - 1
+                If (X = "STORE NOT FOUND") Then
+                    MsgBox("Store is not registered!", MsgBoxStyle.OkOnly + MsgBoxStyle.Critical, "Store Not Found")
+                    Exit Sub
+                End If
+
                 sSql = "Insert Into RMS_DataInit.dbo.PriceTagUploadDataRaw Values(" &
                     "'" & MonthCalendar1.SelectionStart.ToString("d") & "','" & MonthCalendar2.SelectionStart.ToString("d") & "','" & dt.Rows(i).Item("PLU").ToString.Trim &
                     "','" & dt.Rows(i).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(i).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(i).Item("PROMO_MEMBER").ToString.Trim &
-                    "','" & dt.Rows(i).Item("STORE").ToString.Trim & "','','" & sUsername & "')"
+                    "','" & dt2.Rows(0).Item("STORE").ToString.Trim & "','','" & sUsername & "')"
                 sSqlCmd = New SqlCommand(sSql, sSqlConn)
                 sSqlCmd.ExecuteNonQuery()
 
