@@ -6,6 +6,7 @@ Imports ExcelDataReader
 Imports ExcelDataReader.Exceptions
 Imports System.DirectoryServices
 Imports System.Environment
+Imports System.Configuration
 
 Public Class FrmInput
     Dim dtc As DataTableCollection
@@ -18,7 +19,7 @@ Public Class FrmInput
     Dim storeNames As Dictionary(Of String, String)
 
     Sub SqlConnect()
-        sSqlDbConn = "data source=10.110.32.58;initial catalog=ommsde;MultipleActiveResultSets=True;integrated security=false;user id=app.admin;password=@dm1n_app;"
+        sSqlDbConn = ConfigurationManager.ConnectionStrings("PriceTagDb").ConnectionString
         sSqlConn = New SqlConnection(sSqlDbConn)
         If sSqlConn.State = ConnectionState.Closed Then sSqlConn.Open()
     End Sub
