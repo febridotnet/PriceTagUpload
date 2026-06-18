@@ -37,8 +37,8 @@ Public Class FrmConfig
 
         btnOk = New Button With {
             .Text = "Save && Encrypt",
-            .Location = New Point(432, 195),
-            .Size = New Size(100, 30)
+            .Location = New Point(380, 195),
+            .Size = New Size(150, 30)
         }
         AddHandler btnOk.Click, AddressOf BtnOk_Click
 
