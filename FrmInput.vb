@@ -140,15 +140,18 @@ Public Class FrmInput
 
     Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
         SqlConnect()
-        Dim X = DataGridView2.Rows(0).Cells(0).FormattedValue
+        'Dim X = DataGridView2.Rows(0).Cells(0).FormattedValue
 
         Dim sSql As String
         Dim dt = DataGridView1.DataSource
         Dim dt2 = DataGridView2.DataSource
         Dim tableName = GetConfigValue("Database", "PriceTagUploadDataRawTable")
         Dim SPUploadData = GetConfigValue("Database", "SPUploadDataPriceTag")
+        Dim VWActiveStore = GetConfigValue("Database", "VWActiveStore")
+        Dim selectedStores As String = ""
+        Dim sStore As Int32 = 0
 
-        If tableName Is Nothing Or SPUploadData Is Nothing Then
+        If tableName Is Nothing Or SPUploadData Is Nothing Or VWActiveStore Is Nothing Then
             MessageBox.Show("Config.inf file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Exit Sub
         End If
@@ -160,25 +163,74 @@ Public Class FrmInput
             sSqlCmd = New SqlCommand(sSql, sSqlConn)
             sSqlCmd.ExecuteNonQuery()
 
-            For i = 0 To dt.Rows.Count - 1
-                If (X = "STORE NOT FOUND") Then
-                    MsgBox("Store is not registered!", MsgBoxStyle.OkOnly + MsgBoxStyle.Critical, "Store Not Found")
-                    Exit Sub
-                End If
-
-                sSql = "Insert Into " & tableName & " Values(" &
-                    "'" & MonthCalendar1.SelectionStart.ToString("d") & "','" & MonthCalendar2.SelectionStart.ToString("d") & "','" & dt.Rows(i).Item("PLU").ToString.Trim &
-                    "','" & dt.Rows(i).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(i).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(i).Item("PROMO_MEMBER").ToString.Trim &
-                    "','" & dt2.Rows(0).Item("STORE").ToString.Trim & "','','" & sUsername & "')"
-                sSqlCmd = New SqlCommand(sSql, sSqlConn)
-                sSqlCmd.ExecuteNonQuery()
-
-                ProgressBar1.Value = ((i + 1) / (dt.Rows.Count)) * 100
+            For i = 0 To dt2.rows.count - 1
+                For j = 0 To dt.rows.count - 1
+                    sSql = "Insert Into " & tableName & " Values(" &
+                           "'" & MonthCalendar1.SelectionStart.ToString("d") & "','" & MonthCalendar2.SelectionStart.ToString("d") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
+                           "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
+                           "','" & dt2.rows(i).Item("STORE") & "','','" & sUsername & "')"
+                    sSqlCmd = New SqlCommand(sSql, sSqlConn)
+                    sSqlCmd.ExecuteNonQuery()
+                Next
             Next
 
             sSql = "Exec " & SPUploadData
             sSqlCmd = New SqlCommand(sSql, sSqlConn)
             sSqlCmd.ExecuteNonQuery()
+
+            selectedStores = "("
+            For a = 0 To dt2.Rows.Count - 1
+                selectedStores &= DataGridView2.Rows(a).Cells(0).Value.ToString.Trim & ","
+            Next
+            selectedStores = selectedStores.TrimEnd(",") & ")"
+
+            Dim dtCekStore As New DataTable
+            Dim sSqlCekStore = "select * from " & VWActiveStore & " where Store_No in " & selectedStores
+            sSqlCmd = New SqlCommand(sSqlCekStore, sSqlConn)
+            dtCekStore.Load(sSqlCmd.ExecuteReader)
+            If dtCekStore.Rows.Count = 0 Then
+                MsgBox("Tidak ada store aktif ditemukan!", MsgBoxStyle.Critical, "Store Not Found")
+                Exit Sub
+            End If
+
+            'EXEC sp_addlinkedserver   
+            '   @server = N'IPSTORE117',   
+            '   @srvproduct = N'',  
+            '   @provider = N'MSOLEDBSQL',   
+            '   @datasrc = N'10.110.40.29';
+
+            'EXEC sp_addlinkedsrvlogin   
+            '   @rmtsrvname = N'IPSTORE117',   
+            '   @useself = 'false',  
+            '   @locallogin = NULL,
+            '   @rmtuser = N'sa',   
+            '   @rmtpassword = N'Sec@3788min!';
+
+            'EXEC sp_dropserver @server = N'IPSTORE117', @droplogins = 'droplogins';
+
+            'Select Case* From IPSTORE1.StoreSystem.dbo.PriceTag_Promotion;
+            'Select * From IPSTORE117.StoreSystem.dbo.PriceTag_Promotion;
+
+            Dim storeTable = ""
+            For i = 0 To dt2.Rows.Count - 1
+                If (DataGridView2.Rows(i).Cells(0).FormattedValue = "STORE NOT FOUND") Then
+                    MsgBox("Store is not registered!", MsgBoxStyle.OkOnly + MsgBoxStyle.Critical, "Store Not Found")
+                    Exit Sub
+                End If
+
+                sStore = DataGridView2.Rows(i).Cells("STORE").Value
+                storeTable = "IPSTORE" & sStore & ".StoreSystem.dbo.PriceTag_Promotion"
+
+                For j = 0 To dt.rows.count - 1
+                    sSql = "Insert Into " & storeTable & " Values(" &
+                           "'" & MonthCalendar1.SelectionStart.ToString("d") & "','" & MonthCalendar2.SelectionStart.ToString("d") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
+                           "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
+                           "','" & Date.Now & "','" & sUsername & "')"
+                    sSqlCmd = New SqlCommand(sSql, sSqlConn)
+                    sSqlCmd.ExecuteNonQuery()
+                Next
+                ProgressBar1.Value = ((i + 1) / (dt.Rows.Count)) * 100
+            Next
 
             MessageBox.Show("Success", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
             ResetData()
