@@ -8,11 +8,11 @@ Namespace My
                    Environment.GetCommandLineArgs()(1).Equals("/reconfig", StringComparison.OrdinalIgnoreCase) Then
 
                     Using frm As New FrmConfig()
-                        frm.ShowDialog()
+                        If frm.ShowDialog() = DialogResult.OK Then
+                            MessageBox.Show("Connection string has been updated.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
+                            Environment.Exit(0)
+                        End If
                     End Using
-
-                    MessageBox.Show("Connection string has been updated.", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
-                    Environment.Exit(0)
                 End If
 
                 EncryptConnectionStringInConfig()
