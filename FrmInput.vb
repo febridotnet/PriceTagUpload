@@ -19,7 +19,7 @@ Public Class FrmInput
     Dim storeNames As Dictionary(Of String, String)
 
     Sub SqlConnect()
-        sSqlDbConn = ConfigurationManager.ConnectionStrings("PriceTagDb").ConnectionString
+        sSqlDbConn = GetDecryptedConnectionString()
         sSqlConn = New SqlConnection(sSqlDbConn)
         If sSqlConn.State = ConnectionState.Closed Then sSqlConn.Open()
     End Sub
