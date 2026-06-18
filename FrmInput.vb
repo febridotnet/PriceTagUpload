@@ -146,7 +146,9 @@ Public Class FrmInput
         Dim dt = DataGridView1.DataSource
         Dim dt2 = DataGridView2.DataSource
         Dim tableName = GetConfigValue("Database", "PriceTagUploadDataRawTable")
-        If tableName Is Nothing Then
+        Dim SPUploadData = GetConfigValue("Database", "SPUploadDataPriceTag")
+
+        If tableName Is Nothing Or SPUploadData Is Nothing Then
             MessageBox.Show("Config.inf file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             Exit Sub
         End If
@@ -174,7 +176,7 @@ Public Class FrmInput
                 ProgressBar1.Value = ((i + 1) / (dt.Rows.Count)) * 100
             Next
 
-            sSql = "Exec RMS_DataInit.dbo.Sp_Upload_Data_PriceTag"
+            sSql = "Exec " & SPUploadData
             sSqlCmd = New SqlCommand(sSql, sSqlConn)
             sSqlCmd.ExecuteNonQuery()
 
