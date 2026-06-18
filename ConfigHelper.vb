@@ -21,6 +21,16 @@ Module ConfigHelper
         End Try
     End Function
 
+    Sub SaveNewConnectionString(plainConnStr As String)
+        Dim config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None)
+        Dim cs = config.ConnectionStrings.ConnectionStrings("PriceTagDb")
+
+        Dim plainBytes = Encoding.UTF8.GetBytes(plainConnStr)
+        Dim encryptedBytes = ProtectedData.Protect(plainBytes, Entropy, DataProtectionScope.CurrentUser)
+        cs.ConnectionString = Convert.ToBase64String(encryptedBytes)
+        config.Save()
+    End Sub
+
     Sub EncryptConnectionStringInConfig()
         Dim config = ConfigurationManager.OpenExeConfiguration(ConfigurationUserLevel.None)
         Dim cs = config.ConnectionStrings.ConnectionStrings("PriceTagDb")
