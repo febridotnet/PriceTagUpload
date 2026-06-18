@@ -114,6 +114,30 @@ Public Class FrmInput
         txtPromoPeriod.Text = MonthCalendar1.SelectionStart.ToString("dd/MMM/yyyy") & " - " & MonthCalendar2.SelectionStart.ToString("dd/MMM/yyyy")
     End Sub
 
+    Private Function GetConfigValue(section As String, key As String) As String
+        Dim configPath = IO.Path.Combine(Application.StartupPath, "config.inf")
+        If Not IO.File.Exists(configPath) Then
+            Return Nothing
+        End If
+        Dim lines = IO.File.ReadAllLines(configPath)
+        Dim currentSection = ""
+        For Each line In lines
+            Dim trimmed = line.Trim()
+            If trimmed = "" OrElse trimmed.StartsWith(";") OrElse trimmed.StartsWith("#") Then Continue For
+            If trimmed.StartsWith("[") AndAlso trimmed.EndsWith("]") Then
+                currentSection = trimmed.Substring(1, trimmed.Length - 2)
+                Continue For
+            End If
+            Dim eqPos = trimmed.IndexOf("=")
+            If eqPos > 0 AndAlso currentSection = section Then
+                Dim k = trimmed.Substring(0, eqPos).Trim()
+                Dim v = trimmed.Substring(eqPos + 1).Trim()
+                If k = key Then Return v
+            End If
+        Next
+        Throw New Exception("Key '" & key & "' not found in section [" & section & "] in config.inf")
+    End Function
+
     Private Sub btnSave_Click(sender As Object, e As EventArgs) Handles btnSave.Click
         SqlConnect()
         Dim X = DataGridView2.Rows(0).Cells(0).FormattedValue
@@ -121,11 +145,16 @@ Public Class FrmInput
         Dim sSql As String
         Dim dt = DataGridView1.DataSource
         Dim dt2 = DataGridView2.DataSource
+        Dim tableName = GetConfigValue("Database", "PriceTagUploadDataRawTable")
+        If tableName Is Nothing Then
+            MessageBox.Show("Config.inf file not found", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            Exit Sub
+        End If
 
         Try
             sSql = "Create Table #PriceTagUploadData (Date_From Datetime Null,Date_End Datetime Null,Plu Varchar(7) Null,Promo_Desc  Varchar(100) Null,Promo_Price  Varchar(18) Null, 
                     Promo_Member Varchar(7) Null,Store Varchar(7) Null,Last_Update_Date Datetime Null,Last_Update_By Varchar(100) Null)"
-            sSql = "Truncate Table RMS_DataInit.dbo.PriceTagUploadDataRaw"
+            sSql = "Truncate Table " & tableName
             sSqlCmd = New SqlCommand(sSql, sSqlConn)
             sSqlCmd.ExecuteNonQuery()
 
@@ -135,7 +164,7 @@ Public Class FrmInput
                     Exit Sub
                 End If
 
-                sSql = "Insert Into RMS_DataInit.dbo.PriceTagUploadDataRaw Values(" &
+                sSql = "Insert Into " & tableName & " Values(" &
                     "'" & MonthCalendar1.SelectionStart.ToString("d") & "','" & MonthCalendar2.SelectionStart.ToString("d") & "','" & dt.Rows(i).Item("PLU").ToString.Trim &
                     "','" & dt.Rows(i).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(i).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(i).Item("PROMO_MEMBER").ToString.Trim &
                     "','" & dt2.Rows(0).Item("STORE").ToString.Trim & "','','" & sUsername & "')"
