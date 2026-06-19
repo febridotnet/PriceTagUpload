@@ -7,6 +7,7 @@ Imports ExcelDataReader.Exceptions
 Imports System.DirectoryServices
 Imports System.Environment
 Imports System.Configuration
+Imports System.Threading.Tasks
 
 Public Class FrmInput
     Dim dtc As DataTableCollection
@@ -149,6 +150,7 @@ Public Class FrmInput
         Dim SPUploadData = GetConfigValue("Database", "SPUploadDataPriceTag")
         Dim VWActiveStore = GetConfigValue("Database", "VWActiveStore")
         Dim selectedStores As String = ""
+        Dim sSentStatusSql As String = ""
         Dim sStore As Int32 = 0
 
         If tableName Is Nothing Or SPUploadData Is Nothing Or VWActiveStore Is Nothing Then
@@ -160,8 +162,7 @@ Public Class FrmInput
             sSql = "Create Table #PriceTagUploadData (Date_From Datetime Null,Date_End Datetime Null,Plu Varchar(7) Null,Promo_Desc  Varchar(100) Null,Promo_Price  Varchar(18) Null, 
                     Promo_Member Varchar(7) Null,Store Varchar(7) Null,Last_Update_Date Datetime Null,Last_Update_By Varchar(100) Null)"
             sSql = "Truncate Table " & tableName
-            sSqlCmd = New SqlCommand(sSql, sSqlConn)
-            sSqlCmd.ExecuteNonQuery()
+            RunQuery(sSql)
 
             For i = 0 To dt2.rows.count - 1
                 For j = 0 To dt.rows.count - 1
@@ -169,18 +170,17 @@ Public Class FrmInput
                            "'" & MonthCalendar1.SelectionStart.ToString("d") & "','" & MonthCalendar2.SelectionStart.ToString("d") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
                            "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
                            "','" & dt2.rows(i).Item("STORE") & "','','" & sUsername & "')"
-                    sSqlCmd = New SqlCommand(sSql, sSqlConn)
-                    sSqlCmd.ExecuteNonQuery()
+                    RunQuery(sSql)
                 Next
             Next
 
             sSql = "Exec " & SPUploadData
-            sSqlCmd = New SqlCommand(sSql, sSqlConn)
-            sSqlCmd.ExecuteNonQuery()
+            RunQuery(sSql)
 
+            '======================================================= Tembak Data ke Toko =======================================================
             selectedStores = "("
             For a = 0 To dt2.Rows.Count - 1
-                selectedStores &= DataGridView2.Rows(a).Cells(0).Value.ToString.Trim & ","
+                If (DataGridView2.Rows(a).Cells(0).FormattedValue <> "STORE NOT FOUND") Then selectedStores &= DataGridView2.Rows(a).Cells(0).Value.ToString.Trim & ","
             Next
             selectedStores = selectedStores.TrimEnd(",") & ")"
 
@@ -226,8 +226,12 @@ Public Class FrmInput
                            "'" & MonthCalendar1.SelectionStart.ToString("d") & "','" & MonthCalendar2.SelectionStart.ToString("d") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
                            "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
                            "','" & Date.Now & "','" & sUsername & "')"
-                    sSqlCmd = New SqlCommand(sSql, sSqlConn)
-                    sSqlCmd.ExecuteNonQuery()
+                    Try
+                        RunQuery(sSql)
+                        RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & Replace(sSql, "'", "''", 1) & "', 'sent', GETDATE())")
+                    Catch ex As Exception
+                        RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & Replace(sSql, "'", "''", 1) & "', 'failed', GETDATE())")
+                    End Try
                 Next
                 ProgressBar1.Value = ((i + 1) / (dt.Rows.Count)) * 100
             Next
@@ -240,6 +244,15 @@ Public Class FrmInput
         End Try
     End Sub
 
+    Public Sub RunQuery(ByVal sSql As String)
+        Using conn As New SqlConnection(sSqlDbConn)
+            conn.Open()
+            Using cmd As New SqlCommand(sSql, conn)
+                cmd.ExecuteNonQuery()
+            End Using
+        End Using
+    End Sub
+
     Private Sub DataGridView2_CellFormatting(sender As Object, e As DataGridViewCellFormattingEventArgs) Handles DataGridView2.CellFormatting
         If e.ColumnIndex = 0 AndAlso e.RowIndex >= 0 AndAlso e.Value IsNot Nothing Then
             Dim val = e.Value.ToString().Trim()
@@ -249,9 +262,25 @@ Public Class FrmInput
             ElseIf storeNames IsNot Nothing AndAlso storeNames.ContainsKey(val) Then
                 e.Value = storeNames(val)
                 e.FormattingApplied = True
-            ElseIf storeNames.ContainsKey(val) = False AndAlso val <> "" Then
+            ElseIf storeNames IsNot Nothing AndAlso storeNames.ContainsKey(val) = False AndAlso val <> "" Then
                 e.Value = "STORE NOT FOUND"
+                e.CellStyle.ForeColor = Color.White
+                e.CellStyle.BackColor = Color.Red
+                e.CellStyle.SelectionForeColor = Color.White
+                e.CellStyle.SelectionBackColor = Color.Red
                 e.FormattingApplied = True
+            End If
+        End If
+    End Sub
+
+    Private Sub DataGridView2_CellToolTipTextNeeded(sender As Object, e As DataGridViewCellToolTipTextNeededEventArgs) Handles DataGridView2.CellToolTipTextNeeded
+        If e.ColumnIndex = 0 AndAlso e.RowIndex >= 0 Then
+            Dim cell = DataGridView2.Rows(e.RowIndex).Cells(e.ColumnIndex)
+            Dim namatoko = If(cell.FormattedValue IsNot Nothing, cell.FormattedValue.ToString(), "")
+            If namatoko = "STORE NOT FOUND" Then
+                e.ToolTipText = "Store ini tidak akan kita update promonya"
+            Else
+                e.ToolTipText = "Store " & namatoko & " akan kita update promonya"
             End If
         End If
     End Sub

@@ -231,7 +231,7 @@ Partial Class FrmInput
         MinimumSize = New Size(890, 878)
         Name = "FrmInput"
         StartPosition = FormStartPosition.CenterScreen
-        Text = "PDU {PriceTag Data Upload}  - V.1.0.1 "
+        Text = "PDU {PriceTag Data Upload}  - v1.0.3"
         CType(DataGridView1, ComponentModel.ISupportInitialize).EndInit()
         CType(DataGridView2, ComponentModel.ISupportInitialize).EndInit()
         ResumeLayout(False)
