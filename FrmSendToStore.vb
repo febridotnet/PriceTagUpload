@@ -89,7 +89,8 @@ Public Class FrmSendToStore
         End If
 
         Dim centralConnStr = GetDecryptedConnectionString()
-        Dim storeToIps As New Dictionary(Of String, List(Of String))
+        Dim storeToIps As New Dictionary(Of String, List(Of Tuple(Of String, String)))
+        Dim allStoreInfo As New Dictionary(Of String, String)
         Dim storeValues As New List(Of String)
 
         For Each row In dt.Rows
@@ -103,15 +104,20 @@ Public Class FrmSendToStore
                 For Each storeVal In storeValues
                     Dim sql As String
                     If storeVal = "0" Then
-                        sql = "select RSIM2_IP from RMS_DataInit..VW_ActiveStore"
+                        sql = "select Store_No, RSIM2_IP from RMS_DataInit..VW_ActiveStore"
                     Else
-                        sql = "select RSIM2_IP from RMS_DataInit..VW_ActiveStore where Store_No = " & storeVal
+                        sql = "select Store_No, RSIM2_IP from RMS_DataInit..VW_ActiveStore where Store_No = " & storeVal
                     End If
-                    Dim ips As New List(Of String)
+                    Dim ips As New List(Of Tuple(Of String, String))
                     Using cmd As New SqlCommand(sql, conn)
                         Using reader = cmd.ExecuteReader()
                             While reader.Read()
-                                ips.Add(reader("RSIM2_IP").ToString().Trim())
+                                Dim storeNo = reader("Store_No").ToString().Trim()
+                                Dim ip = reader("RSIM2_IP").ToString().Trim()
+                                ips.Add(Tuple.Create(storeNo, ip))
+                                If storeVal = "0" AndAlso Not allStoreInfo.ContainsKey(storeNo) Then
+                                    allStoreInfo(storeNo) = ip
+                                End If
                             End While
                         End Using
                     End Using
@@ -135,7 +141,7 @@ Public Class FrmSendToStore
         Await Task.Run(Sub()
                            Parallel.ForEach(rows, Sub(row)
                                                       Dim storeVal = row("Store").ToString().Trim()
-                                                      Dim ips As List(Of String) = Nothing
+                                                      Dim ips As List(Of Tuple(Of String, String)) = Nothing
                                                       If Not storeToIps.TryGetValue(storeVal, ips) OrElse ips.Count = 0 Then
                                                           UpdateRowStatus(row, "No IP")
                                                           SyncLock lockObj
@@ -156,17 +162,20 @@ Public Class FrmSendToStore
                                                       Dim store = GetColumnValue(row, {"Store", "Store", "store"})
 
                                                       Dim success As Boolean = True
-                                                      For Each ip In ips
+                                                      For Each entry In ips
+                                                          Dim storeNo = entry.Item1
+                                                          Dim ipAddr = entry.Item2
+
                                                           'UAT
-                                                          Dim storeConnStr = "data source=" & ip & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=Sec@3788min!;"
+                                                          Dim storeConnStr = "data source=" & ipAddr & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=Sec@3788min!;"
 
                                                           'PROD
-                                                          'Dim storeConnStr = "data source=" & ip & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;"
+                                                          'Dim storeConnStr = "data source=" & ipAddr & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;"
 
                                                           Dim sSql = "Insert Into StoreSystem.dbo.PriceTag_Promotion Values(" &
-                                "'" & dateFrom & "','" & dateEnd & "','" & plu &
-                                "','" & promoDesc & "','" & promoPrice & "','" & promoMember &
-                                "','" & Date.Now & "','" & username & "')"
+                                     "'" & dateFrom & "','" & dateEnd & "','" & plu &
+                                     "','" & promoDesc & "','" & promoPrice & "','" & promoMember &
+                                     "','" & Date.Now & "','" & username & "')"
                                                           Try
                                                               Using storeConn As New SqlConnection(storeConnStr)
                                                                   storeConn.Open()
@@ -176,7 +185,7 @@ Public Class FrmSendToStore
                                                               End Using
                                                               Using logConn As New SqlConnection(centralConnStr)
                                                                   logConn.Open()
-                                                                  Using cmd As New SqlCommand("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values('" & Replace(sSql, "'", "''") & "', 'sent', GETDATE())", logConn)
+                                                                  Using cmd As New SqlCommand("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values('" & Replace(sSql, "'", "''") & "', '" & storeNo & "', '" & ipAddr & "', 'sent', GETDATE())", logConn)
                                                                       cmd.ExecuteNonQuery()
                                                                   End Using
                                                               End Using
@@ -185,7 +194,7 @@ Public Class FrmSendToStore
                                                               Try
                                                                   Using logConn As New SqlConnection(centralConnStr)
                                                                       logConn.Open()
-                                                                      Using cmd As New SqlCommand("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values('" & Replace(sSql, "'", "''") & "', 'failed', GETDATE())", logConn)
+                                                                      Using cmd As New SqlCommand("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values('" & Replace(sSql, "'", "''") & "', '" & storeNo & "', '" & ipAddr & "', 'failed', GETDATE())", logConn)
                                                                           cmd.ExecuteNonQuery()
                                                                       End Using
                                                                   End Using
