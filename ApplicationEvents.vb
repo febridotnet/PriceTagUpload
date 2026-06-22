@@ -4,8 +4,8 @@ Namespace My
     Partial Friend Class MyApplication
         Private Sub MyApplication_Startup(sender As Object, e As StartupEventArgs) Handles Me.Startup
             Try
-                If Environment.GetCommandLineArgs().Length > 1 AndAlso
-                   Environment.GetCommandLineArgs()(1).Equals("/reconfig", StringComparison.OrdinalIgnoreCase) Then
+                Dim args = Environment.GetCommandLineArgs()
+                If args.Length > 1 AndAlso args(1).Equals("/reconfig", StringComparison.OrdinalIgnoreCase) Then
 
                     Using frm As New FrmConfig()
                         If frm.ShowDialog() = DialogResult.OK Then
@@ -13,6 +13,12 @@ Namespace My
                             Environment.Exit(0)
                         End If
                     End Using
+                ElseIf args.Length > 1 AndAlso args(1).Equals("/SendToStore", StringComparison.OrdinalIgnoreCase) Then
+
+                    Using frm As New FrmSendToStore()
+                        frm.ShowDialog()
+                    End Using
+                    Environment.Exit(0)
                 End If
 
                 EncryptConnectionStringInConfig()
