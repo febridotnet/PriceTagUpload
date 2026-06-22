@@ -153,10 +153,16 @@ Public Class FrmSendToStore
                                                       Dim promoDesc = GetColumnValue(row, {"Promo_Desc", "PROMO_DESCRIPTION", "promo_desc"})
                                                       Dim promoPrice = GetColumnValue(row, {"Promo_Price", "PROMO_PRICE", "promo_price"})
                                                       Dim promoMember = GetColumnValue(row, {"Promo_Member", "PROMO_MEMBER", "promo_member"})
+                                                      Dim store = GetColumnValue(row, {"Store", "Store", "store"})
 
                                                       Dim success As Boolean = True
                                                       For Each ip In ips
-                                                          Dim storeConnStr = "data source=" & ip & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;"
+                                                          'UAT
+                                                          Dim storeConnStr = "data source=" & ip & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=Sec@3788min!;"
+
+                                                          'PROD
+                                                          'Dim storeConnStr = "data source=" & ip & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;"
+
                                                           Dim sSql = "Insert Into StoreSystem.dbo.PriceTag_Promotion Values(" &
                                 "'" & dateFrom & "','" & dateEnd & "','" & plu &
                                 "','" & promoDesc & "','" & promoPrice & "','" & promoMember &
@@ -209,6 +215,13 @@ Public Class FrmSendToStore
             Return
         End If
         row("Status") = status
+        If status <> "Processing..." Then
+            Dim idx = row.Table.Rows.IndexOf(row)
+            If idx >= 0 AndAlso idx < DataGridView1.Rows.Count Then
+                DataGridView1.CurrentCell = DataGridView1.Rows(idx).Cells(0)
+                DataGridView1.FirstDisplayedScrollingRowIndex = idx
+            End If
+        End If
         DataGridView1.Refresh()
     End Sub
 
