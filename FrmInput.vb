@@ -8,6 +8,7 @@ Imports System.DirectoryServices
 Imports System.Environment
 Imports System.Configuration
 Imports System.Threading.Tasks
+Imports System.Web
 
 Public Class FrmInput
     Dim dtc As DataTableCollection
@@ -185,7 +186,8 @@ Public Class FrmInput
             selectedStores = selectedStores.TrimEnd(",") & ")"
 
             Dim dtCekStore As New DataTable
-            Dim sSqlCekStore = "select * from " & VWActiveStore & " where Store_No in " & selectedStores
+            Dim sSqlCekStore As String = If(selectedStores = "(0)", "select * from " & VWActiveStore, "Select * from " & VWActiveStore & " where Store_No In " & selectedStores)
+
             sSqlCmd = New SqlCommand(sSqlCekStore, sSqlConn)
             dtCekStore.Load(sSqlCmd.ExecuteReader)
             If dtCekStore.Rows.Count = 0 Then
@@ -193,33 +195,15 @@ Public Class FrmInput
                 Exit Sub
             End If
 
-            'EXEC sp_addlinkedserver   
-            '   @server = N'IPSTORE117',   
-            '   @srvproduct = N'',  
-            '   @provider = N'MSOLEDBSQL',   
-            '   @datasrc = N'10.110.40.29';
-
-            'EXEC sp_addlinkedsrvlogin   
-            '   @rmtsrvname = N'IPSTORE117',   
-            '   @useself = 'false',  
-            '   @locallogin = NULL,
-            '   @rmtuser = N'sa',   
-            '   @rmtpassword = N'Sec@3788min!';
-
-            'EXEC sp_dropserver @server = N'IPSTORE117', @droplogins = 'droplogins';
-
-            'Select Case* From IPSTORE1.StoreSystem.dbo.PriceTag_Promotion;
-            'Select * From IPSTORE117.StoreSystem.dbo.PriceTag_Promotion;
-
             Dim storeTable = ""
             For i = 0 To dt2.Rows.Count - 1
-                If (DataGridView2.Rows(i).Cells(0).FormattedValue = "STORE NOT FOUND") Then
-                    MsgBox("Store is not registered!", MsgBoxStyle.OkOnly + MsgBoxStyle.Critical, "Store Not Found")
+                If (DataGridView2.Rows(i).Cells(0).FormattedValue = "STORE Not FOUND") Then
+                    MsgBox("Store Is Not registered!", MsgBoxStyle.OkOnly + MsgBoxStyle.Critical, "Store Not Found")
                     Exit Sub
                 End If
 
                 sStore = DataGridView2.Rows(i).Cells("STORE").Value
-                storeTable = "IPSTORE" & sStore & ".StoreSystem.dbo.PriceTag_Promotion"
+                storeTable = "StoreSystem.dbo.PriceTag_Promotion"
 
                 For j = 0 To dt.rows.count - 1
                     sSql = "Insert Into " & storeTable & " Values(" &
@@ -227,7 +211,8 @@ Public Class FrmInput
                            "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
                            "','" & Date.Now & "','" & sUsername & "')"
                     Try
-                        RunQuery(sSql)
+                        RunQueryToStore(sSql, "data source=" & dtCekStore.Select("Store_No = " & sStore)(0).Item(6).ToString.Trim & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;") 'tembak data ke toko
+
                         RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & Replace(sSql, "'", "''", 1) & "', 'sent', GETDATE())")
                     Catch ex As Exception
                         RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & Replace(sSql, "'", "''", 1) & "', 'failed', GETDATE())")
@@ -252,6 +237,26 @@ Public Class FrmInput
             End Using
         End Using
     End Sub
+    Public Sub RunQueryToStore(ByVal sSql As String, ByVal sConnStr As String)
+        Try
+            Using conn As New SqlConnection(sConnStr)
+                conn.Open()
+                Using cmd As New SqlCommand(sSql, conn)
+                    cmd.ExecuteNonQuery()
+                End Using
+            End Using
+        Catch ex As Exception
+            RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & Replace(sSql, "'", "''", 1) & "', 'failed', GETDATE())")
+        End Try
+    End Sub
+    Public Function RunQueryGet(ByVal sSql As String, ByVal sConnStr As String) As DataTable
+        Using conn As New SqlConnection(sSqlDbConn)
+            conn.Open()
+            Using cmd As New SqlCommand(sSql, conn)
+                RunQueryGet.Load(cmd.ExecuteReader)
+            End Using
+        End Using
+    End Function
 
     Private Sub DataGridView2_CellFormatting(sender As Object, e As DataGridViewCellFormattingEventArgs) Handles DataGridView2.CellFormatting
         If e.ColumnIndex = 0 AndAlso e.RowIndex >= 0 AndAlso e.Value IsNot Nothing Then
