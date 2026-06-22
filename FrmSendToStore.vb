@@ -134,68 +134,68 @@ Public Class FrmSendToStore
 
         Await Task.Run(Sub()
                            Parallel.ForEach(rows, Sub(row)
-                                                       Dim storeVal = row("Store").ToString().Trim()
-                                                       Dim ips As List(Of String) = Nothing
-                                                       If Not storeToIps.TryGetValue(storeVal, ips) OrElse ips.Count = 0 Then
-                                                           UpdateRowStatus(row, "No IP")
-                                                           SyncLock lockObj
-                                                               processed += 1
-                                                               UpdateProgress(processed, total)
-                                                           End SyncLock
-                                                           Return
-                                                       End If
+                                                      Dim storeVal = row("Store").ToString().Trim()
+                                                      Dim ips As List(Of String) = Nothing
+                                                      If Not storeToIps.TryGetValue(storeVal, ips) OrElse ips.Count = 0 Then
+                                                          UpdateRowStatus(row, "No IP")
+                                                          SyncLock lockObj
+                                                              processed += 1
+                                                              UpdateProgress(processed, total)
+                                                          End SyncLock
+                                                          Return
+                                                      End If
 
-                                                       UpdateRowStatus(row, "Processing...")
+                                                      UpdateRowStatus(row, "Processing...")
 
-                                                       Dim dateFrom = GetColumnValue(row, {"Date_From", "date_from", "DATE_FROM"})
-                                                       Dim dateEnd = GetColumnValue(row, {"Date_End", "date_end", "DATE_END"})
-                                                       Dim plu = GetColumnValue(row, {"PLU", "Plu", "plu"})
-                                                       Dim promoDesc = GetColumnValue(row, {"Promo_Desc", "PROMO_DESCRIPTION", "promo_desc"})
-                                                       Dim promoPrice = GetColumnValue(row, {"Promo_Price", "PROMO_PRICE", "promo_price"})
-                                                       Dim promoMember = GetColumnValue(row, {"Promo_Member", "PROMO_MEMBER", "promo_member"})
+                                                      Dim dateFrom = GetColumnValue(row, {"Date_From", "date_from", "DATE_FROM"})
+                                                      Dim dateEnd = GetColumnValue(row, {"Date_End", "date_end", "DATE_END"})
+                                                      Dim plu = GetColumnValue(row, {"PLU", "Plu", "plu"})
+                                                      Dim promoDesc = GetColumnValue(row, {"Promo_Desc", "PROMO_DESCRIPTION", "promo_desc"})
+                                                      Dim promoPrice = GetColumnValue(row, {"Promo_Price", "PROMO_PRICE", "promo_price"})
+                                                      Dim promoMember = GetColumnValue(row, {"Promo_Member", "PROMO_MEMBER", "promo_member"})
 
-                                                       Dim success As Boolean = True
-                                                       For Each ip In ips
-                                                           Dim storeConnStr = "data source=" & ip & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;"
-                                                           Dim sSql = "Insert Into StoreSystem.dbo.PriceTag_Promotion Values(" &
+                                                      Dim success As Boolean = True
+                                                      For Each ip In ips
+                                                          Dim storeConnStr = "data source=" & ip & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;"
+                                                          Dim sSql = "Insert Into StoreSystem.dbo.PriceTag_Promotion Values(" &
                                 "'" & dateFrom & "','" & dateEnd & "','" & plu &
                                 "','" & promoDesc & "','" & promoPrice & "','" & promoMember &
                                 "','" & Date.Now & "','" & username & "')"
-                                                           Try
-                                                               Using storeConn As New SqlConnection(storeConnStr)
-                                                                   storeConn.Open()
-                                                                   Using cmd As New SqlCommand(sSql, storeConn)
-                                                                       cmd.ExecuteNonQuery()
-                                                                   End Using
-                                                               End Using
-                                                               Using logConn As New SqlConnection(centralConnStr)
-                                                                   logConn.Open()
-                                                                   Using cmd As New SqlCommand("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values('" & Replace(sSql, "'", "''") & "', 'sent', GETDATE())", logConn)
-                                                                       cmd.ExecuteNonQuery()
-                                                                   End Using
-                                                               End Using
-                                                           Catch ex As Exception
-                                                               success = False
-                                                               Try
-                                                                   Using logConn As New SqlConnection(centralConnStr)
-                                                                       logConn.Open()
-                                                                       Using cmd As New SqlCommand("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values('" & Replace(sSql, "'", "''") & "', 'failed', GETDATE())", logConn)
-                                                                           cmd.ExecuteNonQuery()
-                                                                       End Using
-                                                                   End Using
-                                                               Catch
-                                                               End Try
-                                                           End Try
-                                                       Next
+                                                          Try
+                                                              Using storeConn As New SqlConnection(storeConnStr)
+                                                                  storeConn.Open()
+                                                                  Using cmd As New SqlCommand(sSql, storeConn)
+                                                                      cmd.ExecuteNonQuery()
+                                                                  End Using
+                                                              End Using
+                                                              Using logConn As New SqlConnection(centralConnStr)
+                                                                  logConn.Open()
+                                                                  Using cmd As New SqlCommand("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values('" & Replace(sSql, "'", "''") & "', 'sent', GETDATE())", logConn)
+                                                                      cmd.ExecuteNonQuery()
+                                                                  End Using
+                                                              End Using
+                                                          Catch ex As Exception
+                                                              success = False
+                                                              Try
+                                                                  Using logConn As New SqlConnection(centralConnStr)
+                                                                      logConn.Open()
+                                                                      Using cmd As New SqlCommand("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values('" & Replace(sSql, "'", "''") & "', 'failed', GETDATE())", logConn)
+                                                                          cmd.ExecuteNonQuery()
+                                                                      End Using
+                                                                  End Using
+                                                              Catch
+                                                              End Try
+                                                          End Try
+                                                      Next
 
-                                                       UpdateRowStatus(row, If(success, "Sent", "Failed"))
+                                                      UpdateRowStatus(row, If(success, "Sent", "Failed"))
 
-                                                       SyncLock lockObj
-                                                           processed += 1
-                                                           UpdateProgress(processed, total)
-                                                       End SyncLock
-                                                   End Sub)
-                        End Sub)
+                                                      SyncLock lockObj
+                                                          processed += 1
+                                                          UpdateProgress(processed, total)
+                                                      End SyncLock
+                                                  End Sub)
+                       End Sub)
 
         btnSendToStore.Enabled = True
         lblProgress.Text = "Complete: " & processed & " of " & total & " rows"
