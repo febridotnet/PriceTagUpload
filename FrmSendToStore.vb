@@ -271,7 +271,7 @@ Public Class FrmSendToStore
                                                           End Try
                                                       Else
                                                           UpdateRowStatus(row, "No IP/Store")
-                                                          End If
+                                                      End If
                                                       ' ===============================================================
 
                                                       SyncLock lockObj
