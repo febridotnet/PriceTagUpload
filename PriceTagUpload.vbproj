@@ -50,4 +50,8 @@
     </None>
   </ItemGroup>
 
+  <Target Name="ForceCleanAppPublish" BeforeTargets="BeforeBuild">
+    <Exec Command="powershell -Command &quot;$retry=3; while($retry-- -gt 0) { try { if (Test-Path '$(PublishDir)') { Remove-Item -Path '$(PublishDir)' -Recurse -Force -ErrorAction Stop } break } catch { if ($retry -eq 0) { throw } Start-Sleep -Seconds 3 } }&quot;" />
+  </Target>
+
 </Project>

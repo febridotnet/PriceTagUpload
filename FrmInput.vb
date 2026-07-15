@@ -145,6 +145,7 @@ Public Class FrmInput
         'Dim X = DataGridView2.Rows(0).Cells(0).FormattedValue
 
         Dim sSql As String
+        Dim sSqlLog As String
         Dim dt = DataGridView1.DataSource
         Dim dt2 = DataGridView2.DataSource
         Dim tableName = GetConfigValue("Database", "PriceTagUploadDataRawTable")
@@ -168,7 +169,7 @@ Public Class FrmInput
             For i = 0 To dt2.rows.count - 1
                 For j = 0 To dt.rows.count - 1
                     sSql = "Insert Into " & tableName & " Values(" &
-                           "'" & MonthCalendar1.SelectionStart.ToString("d") & "','" & MonthCalendar2.SelectionStart.ToString("d") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
+                           "'" & MonthCalendar1.SelectionStart.ToString("yyyy-MM-dd") & "','" & MonthCalendar2.SelectionStart.ToString("yyyy-MM-dd") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
                            "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
                            "','" & dt2.rows(i).Item("STORE") & "','','" & sUsername & "')"
                     RunQuery(sSql)
@@ -207,24 +208,24 @@ Public Class FrmInput
 
                 For j = 0 To dt.rows.count - 1
                     sSql = "Insert Into " & storeTable & " Values(" &
-                           "'" & MonthCalendar1.SelectionStart.ToString("d") & "','" & MonthCalendar2.SelectionStart.ToString("d") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
+                           "'" & MonthCalendar1.SelectionStart.ToString("yyyy-MM-dd") & "','" & MonthCalendar2.SelectionStart.ToString("yyyy-MM-dd") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
                            "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
-                           "','" & Date.Now & "','" & sUsername & "')"
+                           "','" & sStore & "','" & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & "','" & sUsername & "')"
                     Try
-                        RunQueryToStore(sSql, "data source=" & dtCekStore.Select("Store_No = " & sStore)(0).Item(6).ToString.Trim & ";initial catalog=RMS_DataInit;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;") 'tembak data ke toko
-
-                        RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & Replace(sSql, "'", "''", 1) & "', 'sent', GETDATE())")
+                        RunQueryToStore(sSql, "data source=" & dtCekStore.Select("Store_No = " & sStore)(0).Item(6).ToString.Trim & ";initial catalog=StoreSystem;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;") 'tembak data ke toko
                     Catch ex As Exception
-                        RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & Replace(sSql, "'", "''", 1) & "', 'failed', GETDATE())")
+                        RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & sStore & "'," & "'" & dtCekStore.Select("Store_No = " & sStore)(0).Item(6).ToString.Trim & "', 'failed', GETDATE(), GETDATE())")
                     End Try
                 Next
-                ProgressBar1.Value = ((i + 1) / (dt.Rows.Count)) * 100
+
+                RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & sStore & "'," & "'" & dtCekStore.Select("Store_No = " & sStore)(0).Item(6).ToString.Trim & "', 'sent', GETDATE(), GETDATE())")
+                ProgressBar1.Value = CInt(((i + 1) / dt2.Rows.Count) * 100)
             Next
 
             MessageBox.Show("Success", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
             ResetData()
         Catch exError As Exception
-            MessageBox.Show("Format Tidak Sesuai", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("Format Tidak Sesuai" & vbCrLf & "Store = " & sStore, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             MessageBox.Show(exError.ToString, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
