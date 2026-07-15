@@ -1,4 +1,4 @@
 [Database]
-PriceTagUploadDataRawTable=RMS_DataInit.dbo.PriceTagUploadDataRawUAT
-SPUploadDataPriceTag=RMS_DataInit.dbo.Sp_Upload_Data_PriceTagUAT
-VWActiveStore=ommsde..VW_ActiveStoreUAT
+PriceTagUploadDataRawTable=RMS_DataInit.dbo.PriceTagUploadDataRaw
+SPUploadDataPriceTag=RMS_DataInit.dbo.Sp_Upload_Data_PriceTag
+VWActiveStore=ommsde..VW_ActiveStore
