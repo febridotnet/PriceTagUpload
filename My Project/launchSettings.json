@@ -1,8 +1,7 @@
 {
   "profiles": {
     "PriceTagUpload": {
-      "commandName": "Project",
-      "commandLineArgs": "/SendToStore"
+      "commandName": "Project"
     }
   }
 }
