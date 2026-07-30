@@ -38,10 +38,10 @@ Public Class FrmInput
         txtFileName.Text = ""
         ProgressBar1.Value = 0
         txtTotalRec.Text = ""
-
     End Sub
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
-        Me.Text = Me.Text & "     >>> " & sUsername & " - " & sComputerName & " <<< "
+        Dim version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version
+        Me.Text = Me.Text & "  v" & version.ToString() & "    >>> " & sUsername & " - " & sComputerName & " <<< "
         ResetData()
         txtStartDate.Enabled = False
         txtEndDate.Enabled = False
@@ -71,8 +71,10 @@ Public Class FrmInput
                         DataGridView1.DataSource = dt
                         DataGridView1.Columns(0).HeaderText = "PLU"
                         DataGridView1.Columns(1).HeaderText = "PROMO DESCRIPTION"
-                        DataGridView1.Columns(2).HeaderText = "PROMO PRICE"
-                        DataGridView1.Columns(3).HeaderText = "PROMO MEMBER"
+                        DataGridView1.Columns(2).HeaderText = "USUAL PRICE"
+                        DataGridView1.Columns(3).HeaderText = "PROMO PRICE"
+                        DataGridView1.Columns(4).HeaderText = "PROMO MEMBER"
+                        DataGridView1.Columns(5).HeaderText = "PROMO PRICE MEMBER"
                         DataGridView1.ReadOnly = True
 
                         dt2 = result.Tables(1)
@@ -168,64 +170,32 @@ Public Class FrmInput
 
             For i = 0 To dt2.rows.count - 1
                 For j = 0 To dt.rows.count - 1
-                    sSql = "Insert Into " & tableName & " Values(" &
+                    'sSql = "Insert Into " & tableName &
+                    '       " (Date_From,Date_End,Plu,Promo_Desc,Promo_Price,Promo_Member,Store,Last_Update_Date,Last_Update_By) Values(" &
+                    '       "'" & MonthCalendar1.SelectionStart.ToString("yyyy-MM-dd") & "','" &
+                    '       MonthCalendar2.SelectionStart.ToString("yyyy-MM-dd") & "','" &
+                    '       dt.Rows(j).Item("PLU").ToString.Trim &
+                    '       "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" &
+                    '       dt.Rows(j).Item("PROMO_PRICE").ToString.Trim &
+                    '       "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim & "','" & dt2.rows(i).Item("STORE") & "','','" & sUsername & "')"
+                    sSql = "Insert Into " & tableName &
+                           " (Date_From,Date_End,Plu,Promo_Desc,USUAL_PRICE,Promo_Price,Promo_Member,PROMO_PRICE_MEMBER,Store,Last_Update_Date,Last_Update_By) Values(" &
                            "'" & MonthCalendar1.SelectionStart.ToString("yyyy-MM-dd") & "','" & MonthCalendar2.SelectionStart.ToString("yyyy-MM-dd") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
-                           "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
+                           "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("USUAL_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim &
+                           "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE_MEMBER").ToString.Trim &
                            "','" & dt2.rows(i).Item("STORE") & "','','" & sUsername & "')"
                     RunQuery(sSql)
                 Next
+                ProgressBar1.Value = CInt(((i + 1) / dt2.Rows.Count) * 100)
             Next
 
             sSql = "Exec " & SPUploadData
             RunQuery(sSql)
 
-            '======================================================= Tembak Data ke Toko =======================================================
-            selectedStores = "("
-            For a = 0 To dt2.Rows.Count - 1
-                If (DataGridView2.Rows(a).Cells(0).FormattedValue <> "STORE NOT FOUND") Then selectedStores &= DataGridView2.Rows(a).Cells(0).Value.ToString.Trim & ","
-            Next
-            selectedStores = selectedStores.TrimEnd(",") & ")"
-
-            Dim dtCekStore As New DataTable
-            Dim sSqlCekStore As String = If(selectedStores = "(0)", "select * from " & VWActiveStore, "Select * from " & VWActiveStore & " where Store_No In " & selectedStores)
-
-            sSqlCmd = New SqlCommand(sSqlCekStore, sSqlConn)
-            dtCekStore.Load(sSqlCmd.ExecuteReader)
-            If dtCekStore.Rows.Count = 0 Then
-                MsgBox("Tidak ada store aktif ditemukan!", MsgBoxStyle.Critical, "Store Not Found")
-                Exit Sub
-            End If
-
-            Dim storeTable = ""
-            For i = 0 To dt2.Rows.Count - 1
-                If (DataGridView2.Rows(i).Cells(0).FormattedValue = "STORE Not FOUND") Then
-                    MsgBox("Store Is Not registered!", MsgBoxStyle.OkOnly + MsgBoxStyle.Critical, "Store Not Found")
-                    Exit Sub
-                End If
-
-                sStore = DataGridView2.Rows(i).Cells("STORE").Value
-                storeTable = "StoreSystem.dbo.PriceTag_Promotion"
-
-                For j = 0 To dt.rows.count - 1
-                    sSql = "Insert Into " & storeTable & " Values(" &
-                           "'" & MonthCalendar1.SelectionStart.ToString("yyyy-MM-dd") & "','" & MonthCalendar2.SelectionStart.ToString("yyyy-MM-dd") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
-                           "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
-                           "','" & sStore & "','" & Date.Now.ToString("yyyy-MM-dd HH:mm:ss") & "','" & sUsername & "')"
-                    Try
-                        RunQueryToStore(sSql, "data source=" & dtCekStore.Select("Store_No = " & sStore)(0).Item(6).ToString.Trim & ";initial catalog=StoreSystem;MultipleActiveResultSets=True;integrated security=false;user id=sa;password=bboey;") 'tembak data ke toko
-                    Catch ex As Exception
-                        RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & sStore & "'," & "'" & dtCekStore.Select("Store_No = " & sStore)(0).Item(6).ToString.Trim & "', 'failed', GETDATE(), GETDATE())")
-                    End Try
-                Next
-
-                RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & sStore & "'," & "'" & dtCekStore.Select("Store_No = " & sStore)(0).Item(6).ToString.Trim & "', 'sent', GETDATE(), GETDATE())")
-                ProgressBar1.Value = CInt(((i + 1) / dt2.Rows.Count) * 100)
-            Next
-
             MessageBox.Show("Success", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information)
             ResetData()
         Catch exError As Exception
-            MessageBox.Show("Format Tidak Sesuai" & vbCrLf & "Store = " & sStore, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            MessageBox.Show("Format Tidak Sesuai", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
             MessageBox.Show(exError.ToString, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
         End Try
     End Sub
@@ -239,16 +209,12 @@ Public Class FrmInput
         End Using
     End Sub
     Public Sub RunQueryToStore(ByVal sSql As String, ByVal sConnStr As String)
-        Try
-            Using conn As New SqlConnection(sConnStr)
-                conn.Open()
-                Using cmd As New SqlCommand(sSql, conn)
-                    cmd.ExecuteNonQuery()
-                End Using
+        Using conn As New SqlConnection(sConnStr)
+            conn.Open()
+            Using cmd As New SqlCommand(sSql, conn)
+                cmd.ExecuteNonQuery()
             End Using
-        Catch ex As Exception
-            RunQuery("Insert Into RMS_DataInit.dbo.PriceTagUploadDataSentStatus Values(" & "'" & Replace(sSql, "'", "''", 1) & "', 'failed', GETDATE())")
-        End Try
+        End Using
     End Sub
     Public Function RunQueryGet(ByVal sSql As String, ByVal sConnStr As String) As DataTable
         Using conn As New SqlConnection(sSqlDbConn)

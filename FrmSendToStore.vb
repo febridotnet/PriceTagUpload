@@ -20,7 +20,8 @@ Public Class FrmSendToStore
     End Sub
 
     Private Sub InitializeComponent()
-        Me.Text = "Data Need to be Sent to Store"
+        Dim version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString
+        Me.Text = "Data Need to be Sent to Store - " & version
         Me.ClientSize = New Size(800, 500)
         Me.StartPosition = FormStartPosition.CenterScreen
         Me.FormBorderStyle = FormBorderStyle.FixedDialog

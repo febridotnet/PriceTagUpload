@@ -8,6 +8,7 @@
     <MyType>WindowsForms</MyType>
     <ApplicationIcon>best-price-tag-icon.ico</ApplicationIcon>
     <NuGetAuditMode>all</NuGetAuditMode>
+    <AssemblyVersion>1.0.0.45</AssemblyVersion>
   </PropertyGroup>
 
   <ItemGroup>
