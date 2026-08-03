@@ -146,6 +146,12 @@ Public Class FrmInput
         SqlConnect()
         'Dim X = DataGridView2.Rows(0).Cells(0).FormattedValue
 
+        If (txtPromoTheme.Text = "") Then
+            MessageBox.Show("Promo Theme Tidak Boleh Kosong", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+            txtPromoTheme.Select()
+            Exit Sub
+        End If
+
         Dim sSql As String
         Dim sSqlLog As String
         Dim dt = DataGridView1.DataSource
@@ -170,20 +176,21 @@ Public Class FrmInput
 
             For i = 0 To dt2.rows.count - 1
                 For j = 0 To dt.rows.count - 1
-                    'sSql = "Insert Into " & tableName &
-                    '       " (Date_From,Date_End,Plu,Promo_Desc,Promo_Price,Promo_Member,Store,Last_Update_Date,Last_Update_By) Values(" &
-                    '       "'" & MonthCalendar1.SelectionStart.ToString("yyyy-MM-dd") & "','" &
-                    '       MonthCalendar2.SelectionStart.ToString("yyyy-MM-dd") & "','" &
-                    '       dt.Rows(j).Item("PLU").ToString.Trim &
-                    '       "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" &
-                    '       dt.Rows(j).Item("PROMO_PRICE").ToString.Trim &
-                    '       "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim & "','" & dt2.rows(i).Item("STORE") & "','','" & sUsername & "')"
                     sSql = "Insert Into " & tableName &
-                           " (Date_From,Date_End,Plu,Promo_Desc,USUAL_PRICE,Promo_Price,Promo_Member,PROMO_PRICE_MEMBER,Store,Last_Update_Date,Last_Update_By) Values(" &
-                           "'" & MonthCalendar1.SelectionStart.ToString("yyyy-MM-dd") & "','" & MonthCalendar2.SelectionStart.ToString("yyyy-MM-dd") & "','" & dt.Rows(j).Item("PLU").ToString.Trim &
-                           "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim & "','" & dt.Rows(j).Item("USUAL_PRICE").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim &
-                           "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim & "','" & dt.Rows(j).Item("PROMO_PRICE_MEMBER").ToString.Trim &
-                           "','" & dt2.rows(i).Item("STORE") & "','','" & sUsername & "')"
+                           " Values(" &
+                           "'" & MonthCalendar1.SelectionStart.ToString("yyyy-MM-dd") &
+                           "','" & MonthCalendar2.SelectionStart.ToString("yyyy-MM-dd") &
+                           "','" & dt.Rows(j).Item("PLU").ToString.Trim &
+                           "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim &
+                           "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim &
+                           "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
+                           "','" & dt2.rows(i).Item("STORE") &
+                           "','" &
+                           "','" & sUsername &
+                           "','" & If(IsDBNull(dt.Rows(j).Item("USUAL_PRICE")), "0", dt.Rows(j).Item("USUAL_PRICE").ToString.Trim) &
+                           "','" & If(IsDBNull(dt.Rows(j).Item("PROMO_PRICE_MEMBER")), "0", dt.Rows(j).Item("PROMO_PRICE_MEMBER").ToString.Trim) &
+                           "','" & txtPromoTheme.Text &
+                           "')"
                     RunQuery(sSql)
                 Next
                 ProgressBar1.Value = CInt(((i + 1) / dt2.Rows.Count) * 100)

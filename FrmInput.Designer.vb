@@ -26,6 +26,8 @@ Partial Class FrmInput
         Label1 = New Label()
         Label2 = New Label()
         Label3 = New Label()
+        Label6 = New Label()
+        txtPromoTheme = New TextBox()
         txtFileName = New TextBox()
         btnFile = New Button()
         MonthCalendar1 = New MonthCalendar()
@@ -74,6 +76,26 @@ Partial Class FrmInput
         Label3.Size = New Size(69, 20)
         Label3.TabIndex = 4
         Label3.Text = "Filename"
+        ' 
+        ' Label6
+        ' 
+        Label6.AutoSize = True
+        Label6.Location = New Point(14, 312)
+        Label6.Name = "Label6"
+        Label6.Size = New Size(128, 20)
+        Label6.TabIndex = 20
+        Label6.Text = "Promotion Theme"
+        ' 
+        ' txtPromoTheme
+        ' 
+        txtPromoTheme.BackColor = SystemColors.ButtonHighlight
+        txtPromoTheme.BorderStyle = BorderStyle.FixedSingle
+        txtPromoTheme.Location = New Point(142, 309)
+        txtPromoTheme.Margin = New Padding(3, 4, 3, 4)
+        txtPromoTheme.Name = "txtPromoTheme"
+        txtPromoTheme.PlaceholderText = "[Please Input Promo Theme Here]"
+        txtPromoTheme.Size = New Size(718, 27)
+        txtPromoTheme.TabIndex = 21
         ' 
         ' txtFileName
         ' 
@@ -222,6 +244,8 @@ Partial Class FrmInput
         Controls.Add(MonthCalendar1)
         Controls.Add(btnFile)
         Controls.Add(txtFileName)
+        Controls.Add(txtPromoTheme)
+        Controls.Add(Label6)
         Controls.Add(Label3)
         Controls.Add(Label2)
         Controls.Add(Label1)
@@ -242,6 +266,8 @@ Partial Class FrmInput
     Friend WithEvents Label1 As Label
     Friend WithEvents Label2 As Label
     Friend WithEvents Label3 As Label
+    Friend WithEvents Label6 As Label
+    Friend WithEvents txtPromoTheme As TextBox
     Friend WithEvents txtFileName As TextBox
     Friend WithEvents btnFile As Button
     Friend WithEvents MonthCalendar1 As MonthCalendar
