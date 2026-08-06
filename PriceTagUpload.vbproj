@@ -12,6 +12,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="PriceTagUpload - add promo theme.zip" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Include="best-price-tag-icon.ico" />
   </ItemGroup>
 
