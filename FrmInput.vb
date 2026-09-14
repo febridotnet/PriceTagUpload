@@ -146,11 +146,11 @@ Public Class FrmInput
         SqlConnect()
         'Dim X = DataGridView2.Rows(0).Cells(0).FormattedValue
 
-        If (txtPromoTheme.Text = "") Then
-            MessageBox.Show("Promo Theme Tidak Boleh Kosong", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
-            txtPromoTheme.Select()
-            Exit Sub
-        End If
+        'If (txtPromoTheme.Text = "") Then
+        '    MessageBox.Show("Promo Theme Tidak Boleh Kosong", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error)
+        '    txtPromoTheme.Select()
+        '    Exit Sub
+        'End If
 
         Dim sSql As String
         Dim sSqlLog As String
@@ -180,10 +180,10 @@ Public Class FrmInput
                            " Values(" &
                            "'" & MonthCalendar1.SelectionStart.ToString("yyyy-MM-dd") &
                            "','" & MonthCalendar2.SelectionStart.ToString("yyyy-MM-dd") &
-                           "','" & dt.Rows(j).Item("PLU").ToString.Trim &
-                           "','" & dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim &
-                           "','" & dt.Rows(j).Item("PROMO_PRICE").ToString.Trim &
-                           "','" & dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim &
+                            "','" & If(IsDBNull(dt.Rows(j).Item("PLU")), "", dt.Rows(j).Item("PLU").ToString.Trim) &
+                            "','" & If(IsDBNull(dt.Rows(j).Item("PROMO_DESCRIPTION")), "", dt.Rows(j).Item("PROMO_DESCRIPTION").ToString.Trim) &
+                            "','" & If(IsDBNull(dt.Rows(j).Item("PROMO_PRICE")), "", dt.Rows(j).Item("PROMO_PRICE").ToString.Trim) &
+                            "','" & If(IsDBNull(dt.Rows(j).Item("PROMO_MEMBER")), "", dt.Rows(j).Item("PROMO_MEMBER").ToString.Trim) &
                            "','" & dt2.rows(i).Item("STORE") &
                            "','" &
                            "','" & sUsername &
