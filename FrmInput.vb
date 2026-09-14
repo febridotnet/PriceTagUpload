@@ -32,12 +32,13 @@ Public Class FrmInput
         MonthCalendar2.MinDate = MonthCalendar1.MinDate
         txtStartDate.Text = MonthCalendar1.SelectionStart.ToString("dd/MMM/yyyy")
         txtEndDate.Text = MonthCalendar2.SelectionStart.ToString("dd/MMM/yyyy")
-        txtPromoPeriod.Text = MonthCalendar1.SelectionStart.ToString("dd/MMM/yyyy") & " - " & MonthCalendar2.SelectionStart.ToString("dd/MMM/yyyy")
+        txtPromoPeriod.Text = "" 'MonthCalendar1.SelectionStart.ToString("dd/MMM/yyyy") & " - " & MonthCalendar2.SelectionStart.ToString("dd/MMM/yyyy")
         DataGridView1.DataSource = ""
         DataGridView2.DataSource = ""
         txtFileName.Text = ""
         ProgressBar1.Value = 0
         txtTotalRec.Text = ""
+        txtPromoTheme.Text = ""
     End Sub
     Private Sub Form1_Load(sender As Object, e As EventArgs) Handles Me.Load
         Dim version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version

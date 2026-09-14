@@ -199,7 +199,7 @@ Partial Class FrmInput
         ' Label5
         ' 
         Label5.AutoSize = True
-        Label5.Location = New Point(703, 801)
+        Label5.Location = New Point(591, 801)
         Label5.Name = "Label5"
         Label5.Size = New Size(99, 20)
         Label5.TabIndex = 17
@@ -209,7 +209,7 @@ Partial Class FrmInput
         ' 
         txtTotalRec.BackColor = SystemColors.Control
         txtTotalRec.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
-        txtTotalRec.Location = New Point(792, 797)
+        txtTotalRec.Location = New Point(680, 797)
         txtTotalRec.Margin = New Padding(3, 4, 3, 4)
         txtTotalRec.Name = "txtTotalRec"
         txtTotalRec.Size = New Size(68, 27)
