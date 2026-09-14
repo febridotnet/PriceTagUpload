@@ -42,6 +42,7 @@ Partial Class FrmInput
         Label5 = New Label()
         txtTotalRec = New TextBox()
         DataGridView2 = New DataGridView()
+        BtnSendToStore = New Button()
         CType(DataGridView1, ComponentModel.ISupportInitialize).BeginInit()
         CType(DataGridView2, ComponentModel.ISupportInitialize).BeginInit()
         SuspendLayout()
@@ -71,7 +72,7 @@ Partial Class FrmInput
         ' Label3
         ' 
         Label3.AutoSize = True
-        Label3.Location = New Point(14, 347)
+        Label3.Location = New Point(14, 340)
         Label3.Name = "Label3"
         Label3.Size = New Size(69, 20)
         Label3.TabIndex = 4
@@ -80,7 +81,7 @@ Partial Class FrmInput
         ' Label6
         ' 
         Label6.AutoSize = True
-        Label6.Location = New Point(14, 312)
+        Label6.Location = New Point(14, 305)
         Label6.Name = "Label6"
         Label6.Size = New Size(128, 20)
         Label6.TabIndex = 20
@@ -90,7 +91,7 @@ Partial Class FrmInput
         ' 
         txtPromoTheme.BackColor = SystemColors.ButtonHighlight
         txtPromoTheme.BorderStyle = BorderStyle.FixedSingle
-        txtPromoTheme.Location = New Point(142, 309)
+        txtPromoTheme.Location = New Point(142, 302)
         txtPromoTheme.Margin = New Padding(3, 4, 3, 4)
         txtPromoTheme.Name = "txtPromoTheme"
         txtPromoTheme.PlaceholderText = "[Please Input Promo Theme Here]"
@@ -101,7 +102,7 @@ Partial Class FrmInput
         ' 
         txtFileName.BackColor = SystemColors.ActiveBorder
         txtFileName.BorderStyle = BorderStyle.FixedSingle
-        txtFileName.Location = New Point(142, 344)
+        txtFileName.Location = New Point(142, 337)
         txtFileName.Margin = New Padding(3, 4, 3, 4)
         txtFileName.Name = "txtFileName"
         txtFileName.Size = New Size(678, 27)
@@ -109,7 +110,7 @@ Partial Class FrmInput
         ' 
         ' btnFile
         ' 
-        btnFile.Location = New Point(826, 340)
+        btnFile.Location = New Point(826, 333)
         btnFile.Margin = New Padding(3, 4, 3, 4)
         btnFile.Name = "btnFile"
         btnFile.Size = New Size(34, 31)
@@ -127,11 +128,11 @@ Partial Class FrmInput
         ' DataGridView1
         ' 
         DataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridView1.Location = New Point(14, 381)
+        DataGridView1.Location = New Point(14, 374)
         DataGridView1.Margin = New Padding(3, 4, 3, 4)
         DataGridView1.Name = "DataGridView1"
         DataGridView1.RowHeadersWidth = 51
-        DataGridView1.Size = New Size(559, 400)
+        DataGridView1.Size = New Size(559, 365)
         DataGridView1.TabIndex = 9
         ' 
         ' txtStartDate
@@ -155,7 +156,7 @@ Partial Class FrmInput
         ' Label4
         ' 
         Label4.AutoSize = True
-        Label4.Location = New Point(14, 279)
+        Label4.Location = New Point(14, 272)
         Label4.Name = "Label4"
         Label4.Size = New Size(125, 20)
         Label4.TabIndex = 12
@@ -172,7 +173,7 @@ Partial Class FrmInput
         ' 
         txtPromoPeriod.BackColor = SystemColors.ActiveBorder
         txtPromoPeriod.BorderStyle = BorderStyle.FixedSingle
-        txtPromoPeriod.Location = New Point(142, 275)
+        txtPromoPeriod.Location = New Point(142, 268)
         txtPromoPeriod.Margin = New Padding(3, 4, 3, 4)
         txtPromoPeriod.Name = "txtPromoPeriod"
         txtPromoPeriod.Size = New Size(718, 27)
@@ -180,7 +181,7 @@ Partial Class FrmInput
         ' 
         ' btnSave
         ' 
-        btnSave.Location = New Point(14, 793)
+        btnSave.Location = New Point(14, 741)
         btnSave.Margin = New Padding(3, 4, 3, 4)
         btnSave.Name = "btnSave"
         btnSave.Size = New Size(86, 31)
@@ -190,7 +191,7 @@ Partial Class FrmInput
         ' 
         ' ProgressBar1
         ' 
-        ProgressBar1.Location = New Point(106, 796)
+        ProgressBar1.Location = New Point(106, 744)
         ProgressBar1.Margin = New Padding(3, 4, 3, 4)
         ProgressBar1.Name = "ProgressBar1"
         ProgressBar1.Size = New Size(467, 28)
@@ -199,7 +200,7 @@ Partial Class FrmInput
         ' Label5
         ' 
         Label5.AutoSize = True
-        Label5.Location = New Point(591, 801)
+        Label5.Location = New Point(591, 749)
         Label5.Name = "Label5"
         Label5.Size = New Size(99, 20)
         Label5.TabIndex = 17
@@ -209,7 +210,7 @@ Partial Class FrmInput
         ' 
         txtTotalRec.BackColor = SystemColors.Control
         txtTotalRec.Font = New Font("Segoe UI", 9F, FontStyle.Bold)
-        txtTotalRec.Location = New Point(680, 797)
+        txtTotalRec.Location = New Point(680, 745)
         txtTotalRec.Margin = New Padding(3, 4, 3, 4)
         txtTotalRec.Name = "txtTotalRec"
         txtTotalRec.Size = New Size(68, 27)
@@ -218,18 +219,28 @@ Partial Class FrmInput
         ' DataGridView2
         ' 
         DataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize
-        DataGridView2.Location = New Point(593, 381)
+        DataGridView2.Location = New Point(593, 374)
         DataGridView2.Margin = New Padding(3, 4, 3, 4)
         DataGridView2.Name = "DataGridView2"
         DataGridView2.RowHeadersWidth = 51
-        DataGridView2.Size = New Size(267, 400)
+        DataGridView2.Size = New Size(267, 365)
         DataGridView2.TabIndex = 19
+        ' 
+        ' BtnSendToStore
+        ' 
+        BtnSendToStore.Location = New Point(12, 783)
+        BtnSendToStore.Name = "BtnSendToStore"
+        BtnSendToStore.Size = New Size(848, 41)
+        BtnSendToStore.TabIndex = 22
+        BtnSendToStore.Text = "Send Promo To Store"
+        BtnSendToStore.UseVisualStyleBackColor = True
         ' 
         ' FrmInput
         ' 
         AutoScaleDimensions = New SizeF(8F, 20F)
         AutoScaleMode = AutoScaleMode.Font
         ClientSize = New Size(872, 831)
+        Controls.Add(BtnSendToStore)
         Controls.Add(DataGridView2)
         Controls.Add(txtTotalRec)
         Controls.Add(Label5)
@@ -282,5 +293,6 @@ Partial Class FrmInput
     Friend WithEvents Label5 As Label
     Friend WithEvents txtTotalRec As TextBox
     Friend WithEvents DataGridView2 As DataGridView
+    Friend WithEvents BtnSendToStore As Button
 
 End Class

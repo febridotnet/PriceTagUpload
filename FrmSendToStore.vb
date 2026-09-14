@@ -321,7 +321,8 @@ Public Class FrmSendToStore
     Private Sub BtnCancel_Click(sender As Object, e As EventArgs) Handles btnCancel.Click
         If MsgBox("Are you sure want to exit?", vbYesNo + vbCritical + vbDefaultButton1, "Quit?") = vbYes Then
             Me.DialogResult = DialogResult.Cancel
-            End
+            Me.Hide()
+            'End
         End If
     End Sub
 End Class

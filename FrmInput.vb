@@ -265,4 +265,7 @@ Public Class FrmInput
         End If
     End Sub
 
+    Private Sub BtnSendToStore_Click(sender As Object, e As EventArgs) Handles BtnSendToStore.Click
+        FrmSendToStore.Show()
+    End Sub
 End Class
